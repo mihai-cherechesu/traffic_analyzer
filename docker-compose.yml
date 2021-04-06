@@ -1,0 +1,87 @@
+version: '3.9'
+
+services:
+    # Cassandra configuration
+    cassandra-node:
+        # Add docker file that builds the image and runs the cassandra_initializer.sh and cassandra_loader.sh
+        # In the dockerfile make 
+        build:
+            context: ./cassandra_node
+            args:
+                HOSTNAME: cassandra-node
+        ports:
+            - "7000:7000"
+
+    cassandra-loader:
+        build: 
+            context: ./cassandra_loader
+            args:
+                HOSTNAME: cassandra-node
+        volumes:
+            - type: bind
+              source: ./dump
+              target: /log/dump
+            - type: bind
+              source: ./hosts
+              target: /log/hosts
+        depends_on:
+            - cassandra-node
+
+    # Custom exporter configuration
+    cassandra-exporter-custom:
+        build:
+            context: ./exporter_custom
+            args:
+                HOST_CASSA: cassandra-node
+                LISTEN_PORT_CASSA: 9042
+                JMX_PORT_CASSA: 7199
+        volumes:
+            - type: bind
+              source: ./hosts
+              target: /log/hosts
+        # Mapping 8080 port from container to 8080 port from host to check custom_exporter metirics independently
+        ports:
+            - "8080:8080"
+        depends_on:
+            - cassandra-node
+
+    # Instaclustr exporter configuration
+    # cassandra-exporter-instaclustr:
+    #     build:
+    #         context: ./exporter_instaclustr
+    #         args:
+    #             JMX_SERVICE_URL: cassandra-node
+    #             JMX_PORT: 7199
+    #             LISTEN_PORT_CASSA: 9042
+    #     volumes:
+    #         - type: bind
+    #           source: ./exporter_instaclustr/options
+    #           target: /options
+    #     ports:
+    #         - "9500:9500"
+    #     depends_on:
+    #         - cassandra-node
+
+    # Prometheus configuration
+    prometheus:
+        build: ./prometheus_conf
+        # Mapping 9090 port from container to 9090 port from host to view prometheus scrapings
+        ports:
+            - "9090:9090"
+        depends_on:
+            # - cassandra-exporter-instaclustr
+            - cassandra-exporter-custom
+
+    # Application configuration
+    application:
+        build:
+            context: ./producer_interceptor
+            args:
+                HOST_CASSA: cassandra-node
+                LISTEN_PORT_CASSA: 9042
+        volumes:
+            - type: bind
+              source: ./dump
+              target: /log/dump
+        depends_on:
+            - cassandra-node
