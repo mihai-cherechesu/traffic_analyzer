@@ -9,6 +9,7 @@ services:
             context: ./cassandra_node
             args:
                 HOSTNAME: cassandra-node
+        container_name: cassandra-node
         ports:
             - "7000:7000"
 
@@ -17,6 +18,8 @@ services:
             context: ./cassandra_loader
             args:
                 HOSTNAME: cassandra-node
+                LISTEN_PORT_CASSA: 9042
+        container_name: cassandra-loader
         volumes:
             - type: bind
               source: ./dump
@@ -35,41 +38,40 @@ services:
                 HOST_CASSA: cassandra-node
                 LISTEN_PORT_CASSA: 9042
                 JMX_PORT_CASSA: 7199
+        container_name: cassandra-exporter-custom
         volumes:
             - type: bind
               source: ./hosts
               target: /log/hosts
-        # Mapping 8080 port from container to 8080 port from host to check custom_exporter metirics independently
+        # Mapping 9100 port from container to 9100 port from host to check custom_exporter metirics independently
         ports:
-            - "8080:8080"
+            - "9100:9100"
         depends_on:
             - cassandra-node
 
     # Instaclustr exporter configuration
-    # cassandra-exporter-instaclustr:
-    #     build:
-    #         context: ./exporter_instaclustr
-    #         args:
-    #             JMX_SERVICE_URL: cassandra-node
-    #             JMX_PORT: 7199
-    #             LISTEN_PORT_CASSA: 9042
-    #     volumes:
-    #         - type: bind
-    #           source: ./exporter_instaclustr/options
-    #           target: /options
-    #     ports:
-    #         - "9500:9500"
-    #     depends_on:
-    #         - cassandra-node
+    cassandra-exporter-instaclustr:
+        build:
+            context: ./exporter_instaclustr
+            args:
+                JMX_SERVICE_URL: cassandra-node
+                JMX_PORT: 7199
+                LISTEN_PORT_CASSA: 9042
+        container_name: cassandra-exporter-instaclustr
+        ports:
+            - "9500:9500"
+        depends_on:
+            - cassandra-node
 
     # Prometheus configuration
     prometheus:
         build: ./prometheus_conf
         # Mapping 9090 port from container to 9090 port from host to view prometheus scrapings
+        container_name: prometheus
         ports:
             - "9090:9090"
         depends_on:
-            # - cassandra-exporter-instaclustr
+            - cassandra-exporter-instaclustr
             - cassandra-exporter-custom
 
     # Application configuration
@@ -79,6 +81,7 @@ services:
             args:
                 HOST_CASSA: cassandra-node
                 LISTEN_PORT_CASSA: 9042
+        container_name: application
         volumes:
             - type: bind
               source: ./dump
