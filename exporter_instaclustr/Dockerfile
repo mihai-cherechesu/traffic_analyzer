@@ -16,9 +16,4 @@ COPY ./docker-entrypoint.sh /
 RUN chmod +x /wait-for /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
-CMD ["java", "-jar", "/cassandra_exporter.jar", "--jmx-user=cassandra", "--jmx-password=cassandra", "--jmx-service-url=service:jmx:rmi:///jndi/rmi://cassandra-node:7199/jmxrmi"]  
-
-# Debugging
-#COPY ./loop.sh /
-#RUN /bin/sh -c 'chmod +x loop.sh'
-#CMD ["sh", "/loop.sh"]
+CMD ["java", "-jar", "/cassandra_exporter.jar", "--jmx-user=cassandra", "--jmx-password=cassandra", "--jmx-service-url=service:jmx:rmi:///jndi/rmi://cassandra-node:7199/jmxrmi", "--cql-address=cassandra-node:9042"]  

@@ -1,1 +1,0 @@
---jmx-password=cassandra --jmx-user=cassandra --jmx-service-url=service:jmx:rmi:///jndi/rmi://cassandra-node:7199/jmxrmi
