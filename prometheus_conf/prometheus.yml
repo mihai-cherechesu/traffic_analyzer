@@ -1,6 +1,6 @@
 global:
-  scrape_interval: 25s
-  scrape_timeout: 20s
+  scrape_interval: 60s
+  scrape_timeout: 60s
 
 scrape_configs:
   - job_name: 'prometheus'
@@ -9,4 +9,4 @@ scrape_configs:
 
   - job_name: 'cassandra' 
     static_configs:
-      - targets: ['cassandra-exporter-custom:8080']
+      - targets: ['cassandra-exporter-custom:9100', 'cassandra-exporter-instaclustr:9500']
