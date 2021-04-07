@@ -13,8 +13,8 @@ COPY wrapper_script.sh /
 COPY wait-for-it.sh /
 COPY docker-entrypoint.sh /
 
-RUN apk add --no-cache tcpdump
+RUN apk add --no-cache tcpdump curl
 RUN /usr/local/bin/bash -c 'chmod +x wrapper_script.sh wait-for-it.sh docker-entrypoint.sh interceptor.sh producer.sh'
 
 ENTRYPOINT ["bash", "/docker-entrypoint.sh"]
-CMD ["bash", "/wrapper_script.sh"]
+CMD ["bash", "-c", "echo \"nameserver 8.8.8.8\" >> /etc/resolv.conf && /wrapper_script.sh"]
