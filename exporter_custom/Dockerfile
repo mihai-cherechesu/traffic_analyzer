@@ -16,7 +16,3 @@ RUN chmod +x /wait-for /docker-entrypoint.sh
 
 ENTRYPOINT ["/docker-entrypoint.sh"]
 CMD ["java", "-jar", "/cassandra_exporter.jar"]
-
-#COPY ./loop.sh /
-#RUN /bin/sh -c 'chmod +x loop.sh'
-#CMD ["sh", "/loop.sh"]
